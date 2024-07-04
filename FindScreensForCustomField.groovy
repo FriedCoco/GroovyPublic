@@ -8,10 +8,10 @@ def fieldScreenManager = ComponentAccessor.getFieldScreenManager()
  
 // id полей, которые нас интересуют
 def fieldNameList = [
-    14934,
-21332,
-21532,
-
+    10001,
+    10002,
+    10003 
+     
     ]
  
 fieldNameList = fieldNameList.collect { "customfield_${it}" }
@@ -45,6 +45,7 @@ def result = getProjectsKeysByFieldIds(issueTypeScreenSchemeList, fieldNameList 
 def getProjectsKeysByFieldIds (Collection<IssueTypeScreenScheme> ITSS, List<String> customfieldIds){
     def fieldScreenManager = ComponentAccessor.getFieldScreenManager()
     def fieldScreens = fieldScreenManager.getFieldScreens()
+    def issueTypeScreenSchemeList = ComponentAccessor.getIssueTypeScreenSchemeManager().getIssueTypeScreenSchemes()
     def workflowManager = ComponentAccessor.getWorkflowManager()
     def workflows = workflowManager.getWorkflows()
     def projects = ComponentAccessor.getProjectManager().getProjectObjects()
@@ -54,7 +55,7 @@ def getProjectsKeysByFieldIds (Collection<IssueTypeScreenScheme> ITSS, List<Stri
     def cf2proj = customfieldIds.collectEntries { customfieldId ->
     def foundScreens = fieldScreens.findAll { it.containsField(customfieldId) }   
  
-    List<String> foundProjectsByScreens = getProjectKeysByFieldScreenIds(ITSS, foundScreens*.id) as List<String>
+    List<String> foundProjectsByScreens = getProjectKeysByFieldScreenIds(issueTypeScreenSchemeList, foundScreens*.id) as List<String>
  
     def foundwf = workflows.findAll { wf ->
         foundScreens.findAll { fs ->
@@ -71,7 +72,7 @@ def getProjectsKeysByFieldIds (Collection<IssueTypeScreenScheme> ITSS, List<Stri
     }
  
     foundProjectsByScreens.addAll(foundProj*.getKey())
-    return [customfieldId, foundScreens.size()]
+    return [customfieldId, foundProjectsByScreens.unique()]
 }
 return cf2proj
 }
@@ -79,6 +80,6 @@ return cf2proj
  
  
 // Вывод результатов
-log.debug(result.collect {key, value ->
-    "\n${key} : ${value} ;"
-})
+result.collect {key, value ->
+    "${key} : ${value} ;\n"
+}
